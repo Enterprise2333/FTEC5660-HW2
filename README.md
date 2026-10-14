@@ -124,4 +124,10 @@ On Windows, activate with `.venv\Scripts\Activate.ps1` or call `.venv\Scripts\py
 
 ### Task 2
 
-Not implemented in this submission stage; the current scope is Task 1 and its report. Task 3 reflection is also outside this stage.
+The submitted one-page `task2/adversarial_cv.pdf` is a CV for Kelly Tsang with one clear false claim: the **visible** education line says **MSc in Finance, HKUST (graduated 2016)**. The course SocialGraph MCP records a **BSc in Finance at HKUST**, and the Facebook profile gives only a Bachelor's Degree. This is a real upgraded-degree discrepancy, not a wording variation. Her other visible claims follow the target profile, so the attack has a single, auditable false detail.
+
+I selected **hidden text and PDF text extraction** from the suggested techniques. The visible page is a raster image of the CV; the PDF text layer beneath that image says BSc. This exploits a gap between what a person sees and what the supplied MarkItDown/PDF loader sends to an LLM. `pypdf` and the course `cv_text()` both extract the BSc line, while a rendered page visibly shows MSc. The attack is limited to the PDF; it does not alter or impersonate the MCP server. I considered LLM-as-a-judge bias and long-context distraction but did not add them: the former depends on an unknown agent's prompt hierarchy, and the latter may obscure the false claim without reliably surviving extraction or a systematic field check. A concise CV makes the observed failure attributable to the text-layer mismatch.
+
+I ran `python hw2.py --cv-folder task2` against my Task 1 verifier with the course MCP and required DeepSeek model. The saved run is in `task2/self_test_results.csv`: **adversarial_cv.pdf 0.9500**, **target_cv.pdf 0.9500**. The local evidence trace shows that the adversarial CV was extracted with degree `BSc`, then compared with the retrieved LinkedIn and Facebook profiles. This is one local run, not an estimate of the five undisclosed agents or their majority-of-three grading. Verifiers that render the page, OCR the image, or compare rendered and extracted text can detect the MSc claim.
+
+Task 3 reflection is outside the current scope.
