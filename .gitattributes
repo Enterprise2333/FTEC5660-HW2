@@ -1,1 +1,3 @@
 results.csv text eol=crlf
+*.pdf binary
+task2/self_test_results.csv text eol=lf
