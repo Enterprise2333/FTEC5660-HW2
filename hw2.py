@@ -83,8 +83,8 @@ def build_agent(tools: list[Any]) -> Any:
     from .env.
     """
     ### YOUR CODE HERE
-    _ = tools
-    return None
+    from verifier import build_agent_impl
+    return build_agent_impl(tools, MODEL_NAME)
 
 
 async def score_cvs(agent: Any, cvs: dict[str, str]) -> dict[str, float | None]:
@@ -106,8 +106,8 @@ async def score_cvs(agent: Any, cvs: dict[str, str]) -> dict[str, float | None]:
     shared by the whole class.
     """
     ### YOUR CODE HERE
-    _ = agent
-    return {name: None for name in cvs}
+    from verifier import score_cvs_impl
+    return await score_cvs_impl(agent, cvs)
 
 
 # Everything below is provided runner/scoring code. No edits are needed.

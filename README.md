@@ -90,10 +90,38 @@ python3 hw2.py --cv-folder task2
 attack the MCP server. See the homework description for the full rules.
 
 ## Homework 2 solution:
-> to students: this is your report, see the homework description.
 
 ### Task 1
-> one paragraph describing your solution, and your results on `public_test`.
+
+My solution uses LangChain with `deepseek-v4-flash` in a fixed evidence-first workflow. A structured extraction step records every CV claim without correcting it. The program then calls the course SocialGraph MCP to search and fetch a complete LinkedIn profile, resolves same-name candidates using employers, education, location and dates, and independently searches and fetches a Facebook profile using its own user ID. Only after both profiles have been retrieved does the model compare CV claims with LinkedIn, followed by a separate Facebook comparison. LinkedIn checks every claimed name, current city, job, degree and skill; Facebook corroborates its available legal name, current city, current job and education, while unavailable historical details and skills are marked as such. Python enforces exact years, explicit seniority and claimed skills against the complete LinkedIn list, then assigns 0.95 for consistent evidence, 0.05 for a confirmed discrepancy and 0.50 for ambiguous identity, missing evidence, source conflict or execution failure. Each CV's ignored `verification_details.json` entry includes the extracted claims, both original profiles, both field-level comparison reports and MCP call trace. CV and tool text are treated as untrusted data; the program runs at most three CVs and three MCP calls concurrently, retries MCP failures once, and isolates per-CV errors. No public filenames, candidate identities or labels are built into the verifier; the supplied grading runner alone reads labels.
+
+Facebook's search has a 20-result cap and some display names are nicknames. After a Facebook search, if no candidate is well supported, the workflow may try the LinkedIn numeric ID as a **hypothesis** for a Facebook lookup; it accepts that record only when the independently retrieved Facebook legal name, city, current company and title agree with LinkedIn. An ID match alone never establishes identity. The final score also checks whether the two sources agree on fields they both provide.
+
+The fixed two-source workflow achieved **7/7 correct (100%)** on the full public test on 2026-10-14, with no timeout or exception fallback. Results are recorded in `results.csv`:
+
+| CV | Score | Correctness |
+| --- | ---: | --- |
+| CV_1.pdf | 0.9500 | correct |
+| CV_2.pdf | 0.9500 | correct |
+| CV_3.pdf | 0.9500 | correct |
+| CV_4.pdf | 0.0500 | correct |
+| CV_5.pdf | 0.0500 | correct |
+| CV_6.pdf | 0.9500 | correct |
+| CV_7.pdf | 0.0500 | correct |
+
+These scores are rule-based confidence levels, not calibrated probabilities. The uncertainty score of 0.50 is conservative and is counted as a discrepancy by the supplied grader; it does not establish that a CV contains a false claim. Public-set accuracy does not guarantee hidden-set accuracy, and LLM identity resolution, interpretation and injection resistance remain limitations.
+
+#### Run and inspect
+
+Use the setup commands above, then run:
+
+```bash
+python hw2.py --cv-folder public_test
+python -m unittest discover -s tests -v
+```
+
+On Windows, activate with `.venv\Scripts\Activate.ps1` or call `.venv\Scripts\python.exe` directly. Put `DEEPSEEK_API_KEY` in a local `.env` or environment variable. No key is included in this repository. In addition to `results.csv`, the program saves an ignored `verification_details.json` with both source profiles, field-level evidence, MCP calls and any failure type. The grading/PDF/MCP loader code is unchanged. Each CV has a 210-second limit; 20 CVs in batches of three have a verification time budget of at most about 24.5 minutes, excluding setup and PDF loading.
 
 ### Task 2
-> the attack techniques you used and why you expect them to work.
+
+Not implemented in this submission stage; the current scope is Task 1 and its report. Task 3 reflection is also outside this stage.
